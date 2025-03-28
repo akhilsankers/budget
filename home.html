@@ -81,6 +81,7 @@
                     height="20" alt="Wallet Logo" />
                 <small>My Wallet</small>
             </a>
+            <button onclick="logout()" class="btn btn-danger mt-2">logout</button>
         </div>
     </nav>
 
@@ -167,6 +168,7 @@
                 userData.balance -= exp;
                 document.getElementById("exp").value = "";
                 saveData();
+                 window.location.reload();
             }
         }
 
@@ -248,6 +250,9 @@
                     maintainAspectRatio: false
                 }
             });
+        }
+         function logout() {
+            window.location.href = "./index.html";
         }
     </script>
 </body>

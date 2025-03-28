@@ -1,0 +1,23 @@
+@media (max-width: 800px) {
+    body {
+        background-color: lightblue;
+    }
+    .box {
+        display: flex;
+        flex-direction: column; /* Stack items vertically */
+        align-items: center; /* Center content */
+        height: auto;
+        width:400px;
+        padding: 20px;
+    }
+    .box img {
+        width: 50%;
+        height: auto;
+        margin-left: 25%;
+        margin-right: 25%;
+    }
+    .box2 {
+        width:400px;
+       
+    }
+}

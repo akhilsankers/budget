@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/frappe-charts/dist/frappe-charts.min.iife.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@frappe/charts"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@frappe/charts/dist/frappe-charts.min.iife.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <title>My Wallet</title>
+    <style>
+        body {
+            background-color: rgb(255, 255, 255);
+        }
+
+        .invest {
+            display: flex;
+            align-items: center;
+            margin: 30px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background: #fff;
+        }
+
+        .bit {
+            flex: 1;
+            height: 253px;
+            background-image: url("https://cdn.prod.website-files.com/640549127d01f74eb844acc7/66da23097c0419812ed6e016_ai-powered-gst-cashbook-p-1080.png");
+            background-size: cover;
+            background-position: center;
+            border-radius: 10px;
+        }
+
+        .row-box {
+            flex: 1;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .result {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px;
+        }
+
+        .chart {
+            width: 500px;
+            height: 400px;
+            padding: 10px;
+            border-radius: 10px;
+            background: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .list {
+            width: 600px;
+            height: 400px;
+            padding: 10px;
+            border-radius: 10px;
+            background: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .list {
+            overflow-y: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <img src="https://www.bootgum.com/wp-content/uploads/2018/07/Wallet_Cash_550px.gif" class="me-2"
+                    height="20" alt="Wallet Logo" />
+                <small>My Wallet</small>
+            </a>
+        </div>
+    </nav>
+
+    <h1 class="text-center" id="welcome">Welcome</h1>
+
+    <div class="invest">
+        <div class="bit"></div>
+        <div class="row-box">
+            <h3>INCOME</h3>
+            <input type="number" class="form-control" id="inc" placeholder="Enter Income">
+            <button onclick="income()" class="btn btn-success mt-2">Add Income</button>
+        </div>
+    </div>
+
+    <div class="invest">
+        <div class="row-box">
+            <h3>Expense</h3>
+            <select class="form-control" id="expType">
+                <option value="Food">Food</option>
+                <option value="Transport">Transport</option>
+                <option value="Shopping">Shopping</option>
+                <option value="Other">Other</option>
+            </select>
+            <input type="number" class="form-control mt-2" id="exp" placeholder="Amount">
+            <button onclick="expense()" class="btn btn-danger mt-2">Add Expense</button>
+        </div>
+        <div class="bit"></div>
+    </div>
+
+    <div class="text-center mt-3">
+        <button onclick="clearData()" class="btn btn-warning">Clear Data</button>
+    </div>
+
+    <div class="result">
+      <!-- Chart Container -->
+    <div class="chart-container">
+        <canvas id="expenseChart"></canvas>
+    </div>
+        <div class="list">
+            <center>
+                <h3>History</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Catagory</th>
+                            <th scope="col">Amount</th>
+                            <th scope="col">Balance</th>
+                            <th scope="col">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="result">
+                    </tbody>
+                </table>
+            </center>
+        </div>
+    </div>
+
+    <script>
+        var email = sessionStorage.getItem("email");
+        var userData = JSON.parse(localStorage.getItem(email));
+
+        updateHistory();
+        function saveData() {
+            localStorage.setItem(email, JSON.stringify(userData));
+            pichart() ;
+            updateHistory();
+        }
+
+        function income() {
+            var inc = parseFloat(document.getElementById("inc").value);
+            if (!isNaN(inc) && inc > 0) {
+                userData.transactions.push({ type: "Income", amount: inc, balance: userData.balance + inc, date: new Date().toLocaleDateString("en-GB") });
+                userData.balance += inc;
+                document.getElementById("inc").value = "";
+                saveData();
+            }
+        }
+
+        function expense() {
+            var expType = document.getElementById("expType").value;
+            var exp = parseFloat(document.getElementById("exp").value);
+            if (!isNaN(exp) && exp > 0) {
+                userData.transactions.push({ type: expType, amount: exp, balance: userData.balance - exp, date: new Date().toLocaleDateString("en-GB") });
+                userData.balance -= exp;
+                document.getElementById("exp").value = "";
+                saveData();
+            }
+        }
+
+        function clearData() {
+            userData.transactions = [];
+            userData.balance = 0;
+            saveData();
+            alert("All transactions and balance have been cleared!");
+            window.location.reload();
+        }
+        function updateHistory() {
+            console.log(userData);
+            document.getElementById("welcome").innerText = "Welcome " + userData.name + "Your Balance: " + userData.balance;
+            let transactions = userData.transactions;
+            document.getElementById("result").innerHTML = "";
+            for (let todo of transactions) {
+                result.innerHTML += `
+                <tr>
+                    <td >${todo.type}</td>
+                    <td >${todo.amount}</td>
+                    <td >${todo.balance}</td>
+                    <td>${todo.date}</td>
+                </tr>`
+            }
+        document.addEventListener("DOMContentLoaded", function () {
+            pichart();
+        });
+
+        }
+
+        function pichart() {
+            let expenseTypes = [];
+            let expenseAmounts = [];
+            let transactions = userData.transactions;
+            console.log(transactions);
+            for (let todo of transactions){
+                if(todo.type === "Income"){
+                    continue;
+                }
+                if (expenseTypes.includes(todo.type)) {
+                    let index = expenseTypes.indexOf(todo.type);
+                    expenseAmounts[index] += todo.amount;
+                } else {
+                    expenseTypes.push(todo.type);
+                    expenseAmounts.push(todo.amount);
+                }
+            }
+            console.log(expenseTypes);
+            console.log(expenseAmounts);
+            
+            let chartCanvas = document.getElementById('expenseChart');
+            if (!chartCanvas) {
+                console.error("Chart canvas element not found!");
+                return;
+            }
+
+            let ctx = chartCanvas.getContext('2d');
+
+            if (window.expenseChartInstance) {
+                window.expenseChartInstance.destroy();
+            }
+
+            if (expenseTypes.length === 0) {
+                chartCanvas.parentElement.innerHTML = "<p class='text-center'>No Expense Data Available</p>";
+                return;
+            }
+
+            window.expenseChartInstance = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: expenseTypes,
+                    datasets: [{
+                        data: expenseAmounts,
+                        backgroundColor: ['#FF5733', '#33FF57', '#3357FF', '#FF33A1', '#FFC300', '#8D33FF']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
